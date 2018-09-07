@@ -11,7 +11,7 @@ class CaptureInputStream(private val emit:(String)->Unit,
                          private val inputStream: InputStream){
     fun start(){
         launch {
-            val inputStreamReader = InputStreamReader(inputStream, GlobalConstants.CHARSET)
+            val inputStreamReader = InputStreamReader(inputStream, GlobalConstants.Charset)
             val bufferedReader = BufferedReader(inputStreamReader)
             var line = bufferedReader.readLine()
             while(line != null){

@@ -31,4 +31,8 @@ class LineEmittingLogger(val emit: (String) -> Unit) : Logger {
 
     override fun captureOutputStream(source: String, type: String, prefix: String): OutputStream =
             CaptureOutputStream(emit, source, type, prefix)
+
+    override fun waitingOn(caption: String, attempt: Int, target: Any) {
+        emit("attempt $attempt for \"$caption\" returned \"$target\"")
+    }
 }

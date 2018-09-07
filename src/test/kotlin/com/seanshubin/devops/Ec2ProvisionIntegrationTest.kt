@@ -14,7 +14,7 @@ class Ec2ProvisionIntegrationTest{
 
         // terminate the instance and make sure it goes away
         ec2.terminateInstance(myEc2Instance)
-        ec2.waitForInstanceToGoAway(myEc2Instance, 2, TimeUnit.MINUTES)
+        ec2.waitUntilGone(myEc2Instance, 2, TimeUnit.MINUTES)
         val instancesAfterTerminate = ec2.listInstancesNotTerminated()
         assert(!instancesAfterTerminate.contains(myEc2Instance))
     }

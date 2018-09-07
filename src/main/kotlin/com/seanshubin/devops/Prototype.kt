@@ -1,27 +1,34 @@
 package com.seanshubin.devops
 
-fun indent(amount: Int): (String) -> String = { s -> " ".repeat(amount) + s }
-
-val displayLine = { line: String -> println(line) }
-
-fun createDisplayFunction(ec2: Ec2Api) = { caption: String ->
-    println(caption)
-    ec2.listInstancesNotTerminated().map(indent(2)).forEach(displayLine)
+fun datomicServer(){
+    val datomicDir = DatomicServerDependencyInjection.datomicDir
+    val ec2 = DatomicServerDependencyInjection.ec2
+    ec2.listInstancesNotTerminated()
+    val createShellFromHost = DatomicServerDependencyInjection.createShellFromHost
+    val instanceId = ec2.createInstance(GlobalConstants.AmazonLinux2AMI, GlobalConstants.KeyName)
+    val host = ec2.getHost(instanceId)
+    try {
+        ec2.waitUntilReady(instanceId)
+        val ssh = createShellFromHost(host)
+        ssh.execute("pwd")
+        ssh.execute("rm -rf $datomicDir")
+        ssh.execute("rm $datomicDir.zip")
+        ssh.execute("wget https://my.datomic.com/downloads/free/${GlobalConstants.DatomicVersion} -O $datomicDir.zip")
+        ssh.execute("unzip $datomicDir.zip")
+        ssh.execute("sudo yum -y install java")
+        ssh.execute("$datomicDir/bin/transactor $datomicDir/config/samples/free-transactor-template.properties")
+    } finally {
+        println("host = $host")
+        println("instanceId = $instanceId")
+        println("ssh -i \"${GlobalConstants.PrivateKeyPathName}\" ${GlobalConstants.UserName}@$host")
+    }
 }
 
 fun main(args: Array<String>) {
-    // initial
-    val ec2 = Ec2Factory.create()
-    val display = createDisplayFunction(ec2)
-    display("Initial state")
+    datomicServer()
 
-    // create
-    val myEc2Instance = ec2.createInstance(Constants.AmazonLinux2AMI, Constants.KeyName)
-    display("After created $myEc2Instance")
 
-    // terminate
-    ec2.terminateInstance(myEc2Instance)
-    display("After terminated $myEc2Instance")
+
 
 //    val emit = { s:String -> println(s)}
 //    val logger = LineEmittingLogger(emit)

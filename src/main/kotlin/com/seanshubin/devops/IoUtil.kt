@@ -7,7 +7,7 @@ import java.io.InputStreamReader
 import java.nio.charset.Charset
 
 object IoUtil {
-    private val charset: Charset = GlobalConstants.CHARSET
+    private val charset: Charset = GlobalConstants.Charset
     fun inputStreamToLines(inputStream:InputStream):List<String>{
         val inputStreamReader = InputStreamReader(inputStream, charset)
         val bufferedReader = BufferedReader(inputStreamReader)
