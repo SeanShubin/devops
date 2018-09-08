@@ -11,4 +11,6 @@ object GlobalConstants {
     val UserName = "ec2-user"
     val PrivateKeyPathName = "/Users/sshubin/aws/sean-test-ok-to-delete.pem"
     val DatomicVersion = "0.9.5703"
+    //val SecurityGroup = "sg-329f884c"
+    val SecurityGroup = "sean-ssh"
 }

@@ -35,4 +35,8 @@ class LineEmittingLogger(val emit: (String) -> Unit) : Logger {
     override fun waitingOn(caption: String, attempt: Int, target: Any) {
         emit("attempt $attempt for \"$caption\" returned \"$target\"")
     }
+
+    override fun update(caption: String, status: String, attempt: Int) {
+        emit("attempt $attempt for \"$caption\" is \"$status\"")
+    }
 }

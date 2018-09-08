@@ -33,6 +33,7 @@ class Ec2ApiWithAmazonEC2Async(private val client: AmazonEC2Async,
         request.withMinCount(1)
         request.withMaxCount(1)
         request.withKeyName(keyName)
+        request.withSecurityGroups(GlobalConstants.SecurityGroup)
         val result: RunInstancesResult = client.runInstances(request)
         val instanceId = result.reservation.instances.exactlyOne().instanceId
         return instanceId
