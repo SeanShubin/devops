@@ -1,27 +1,34 @@
 package com.seanshubin.devops
 
 fun datomicServer() {
+    val schulzeJar = GlobalConstants.SchulzeJar
+    val userName = GlobalConstants.UserName
+    val privateKeyPathName = GlobalConstants.PrivateKeyPathName
+    val datomicVersion = GlobalConstants.DatomicVersion
     val datomicDir = DatomicServerDependencyInjection.datomicDir
     val ec2 = DatomicServerDependencyInjection.ec2
+    val log = DatomicServerDependencyInjection.logger
+    val localShell = DatomicServerDependencyInjection.localShell
     ec2.listInstancesNotTerminated()
     val createShellFromHost = DatomicServerDependencyInjection.createShellFromHost
     val instanceId = ec2.createInstance(GlobalConstants.AmazonLinux2AMI, GlobalConstants.KeyName)
-    println("instanceId = $instanceId")
+    log.emit("instanceId = $instanceId")
     val stabilizer = DatomicServerDependencyInjection.stabilizer
     ec2.waitUntilReady(instanceId)
     val host = ec2.getHost(instanceId)
-    println("host = $host")
-    println("ssh -i \"${GlobalConstants.PrivateKeyPathName}\" ${GlobalConstants.UserName}@$host")
+    log.emit("host = $host")
+    log.emit("ssh -i \"$privateKeyPathName\" $userName@$host")
     val createShell: () -> SshShell = {
         val shell = createShellFromHost(host)
         shell.execute("pwd")
         shell
     }
     val ssh = stabilizer.create("create shell", createShell)
-//    ssh.execute("rm -rf $datomicDir")
-//    ssh.execute("rm $datomicDir.zip")
-    ssh.execute("wget https://my.datomic.com/downloads/free/${GlobalConstants.DatomicVersion} -O $datomicDir.zip")
+    localShell.execute("scp", "-i", privateKeyPathName, schulzeJar, "$userName@$host:")
+    ssh.execute("wget https://my.datomic.com/downloads/free/$datomicVersion -O $datomicDir.zip")
     ssh.execute("unzip $datomicDir.zip")
+
+
     ssh.execute("sudo yum -y install java")
     ssh.execute("cd $datomicDir && bin/transactor config/samples/free-transactor-template.properties")
 }
