@@ -2,7 +2,6 @@ package com.seanshubin.devops
 
 import com.jcabi.ssh.Ssh
 import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.time.Clock
 
 class JcabiShell(

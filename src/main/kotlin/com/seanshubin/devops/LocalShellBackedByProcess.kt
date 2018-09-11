@@ -5,6 +5,9 @@ import java.time.Clock
 class LocalShellBackedByProcess(private val logger:Logger,
                                 private val clock: Clock):LocalShell {
     override fun execute(vararg command: String) {
+        executeAndReturnExitCode(*command)
+    }
+    override fun executeAndReturnExitCode(vararg command: String):Int {
         val startTime = clock.instant()
         val process: Process = ProcessBuilder().command(*command).start()
         process.errorStream
@@ -20,5 +23,6 @@ class LocalShellBackedByProcess(private val logger:Logger,
                 endTime,
                 command.toList(),
                 exitCode)
+        return exitCode
     }
 }

@@ -25,6 +25,7 @@ class Stabilizer(val statusFunction: (String, String, Int) -> Unit) {
                 } catch (ex: Exception) {
                     statusFunction(caption, "failed", attempt)
                     attempt++
+                } finally {
                     delay(timeBetweenAttempts.toMillis())
                 }
             }
@@ -35,5 +36,32 @@ class Stabilizer(val statusFunction: (String, String, Int) -> Unit) {
             }
         }
         return resultToReturn!!
+    }
+
+    fun <T> waitUntilEqual(caption: String, target:T, checkValue: () -> T) {
+        var attempt = 1
+        val initialValue = checkValue()
+        var done = target == initialValue
+        statusFunction(caption, "checked(got $initialValue, waiting for $target)", attempt)
+        val job = launch {
+            while (!done && attempt <= attemptLimit) {
+                attempt++
+                try {
+                    statusFunction(caption, "trying", attempt)
+                    val value = checkValue()
+                    done = target == value
+                    statusFunction(caption, "checked(got $value, waiting for $target)", attempt)
+                } catch (ex: Exception) {
+                    statusFunction(caption, "failed", attempt)
+                } finally {
+                    delay(timeBetweenAttempts.toMillis())
+                }
+            }
+        }
+        runBlocking {
+            withTimeout(totalTimeLimit.toMillis()) {
+                job.join()
+            }
+        }
     }
 }
