@@ -1,17 +1,14 @@
 package com.seanshubin.devops
 
 import com.amazonaws.services.ec2.AmazonEC2Async
-import com.amazonaws.services.ec2.model.*
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.runBlocking
-import kotlinx.coroutines.experimental.withTimeout
-import org.apache.commons.lang3.ThreadUtils
+import com.amazonaws.services.ec2.model.DescribeInstancesRequest
+import com.amazonaws.services.ec2.model.RunInstancesRequest
+import com.amazonaws.services.ec2.model.RunInstancesResult
+import com.amazonaws.services.ec2.model.TerminateInstancesRequest
 import java.util.concurrent.TimeUnit
-import java.util.function.BiPredicate
 
 class Ec2ApiWithAmazonEC2Async(private val client: AmazonEC2Async,
-                               private val logWaiting:(String, Int, Any)->Unit):Ec2Api {
+                               private val stabilizer: Stabilizer) : Ec2Api {
     override fun listInstancesNotTerminated(): List<String> {
         val request = DescribeInstancesRequest()
         val result = client.describeInstances(request)
@@ -45,8 +42,8 @@ class Ec2ApiWithAmazonEC2Async(private val client: AmazonEC2Async,
         client.terminateInstances(request)
     }
 
-    override fun waitUntilGone(id: String, quantity: Long, unit: TimeUnit) {
-        waitUntilEqual("gone", true){
+    override fun waitUntilGone(id: String) {
+        stabilizer.waitUntilEqual("ec2 instance $id gone (or terminated)", true) {
             checkIfGone(id)
         }
     }
@@ -60,50 +57,11 @@ class Ec2ApiWithAmazonEC2Async(private val client: AmazonEC2Async,
     }
 
     override fun waitUntilReady(id: String) {
-        waitUntilEqual("ready", "running"){
+        stabilizer.waitUntilEqual("ec2 instance $id ready", "running") {
             getState(id)
         }
-//        waitUntilValidHost(id)
     }
 
-    private fun waitUntilEqual(caption:String, target:Any, checkValue: () -> Any){
-        var value = checkValue()
-        var attempt = 1
-        logWaiting(caption, attempt, value)
-        val job = launch {
-            while (value != target) {
-                delay(5, TimeUnit.SECONDS)
-                value = checkValue()
-                attempt++
-                logWaiting(caption, attempt, value)
-            }
-        }
-        runBlocking {
-            withTimeout(2, TimeUnit.MINUTES) {
-                job.join()
-            }
-        }
-    }
-
-//    private fun waitUntilValidHost(id:String){
-//        var value = getHost(id)
-//        var attempt = 1
-//        logWaiting("host", attempt, value)
-//        val job = launch {
-//            while (value.isEmpty()) {
-//                delay(5, TimeUnit.SECONDS)
-//                value = getHost(id)
-//                attempt++
-//                logWaiting("host", attempt, value)
-//            }
-//        }
-//        runBlocking {
-//            withTimeout(2, TimeUnit.MINUTES) {
-//                job.join()
-//            }
-//        }
-//    }
-//
     private fun getState(id: String): String {
         val request = DescribeInstancesRequest()
         request.withInstanceIds(id)
@@ -112,5 +70,5 @@ class Ec2ApiWithAmazonEC2Async(private val client: AmazonEC2Async,
         return state
     }
 
-    private fun checkIfGone(id:String):Boolean = !listInstancesNotTerminated().contains(id)
+    private fun checkIfGone(id: String): Boolean = !listInstancesNotTerminated().contains(id)
 }

@@ -8,10 +8,11 @@ object GlobalConstants {
     val Charset: Charset = StandardCharsets.UTF_8
     val Region = Regions.US_EAST_1
     const val AmazonLinux2AMI = "ami-04681a1dbd79675a5"
-    const val KeyName = "sean-test-ok-to-delete"
+    const val KeyName = "schulze-voter"
     const val UserName = "ec2-user"
-    const val PrivateKeyPathName = "/Users/sshubin/aws/sean-test-ok-to-delete.pem"
+    private const val UserHomeDirName = "/Users/sshubin"
+    const val PrivateKeyPathName = "$UserHomeDirName/aws/schulze-voter.pem"
     const val DatomicVersion = "0.9.5703"
-    const val SecurityGroup = "sean-ssh"
-    const val SchulzeJar = "/Users/sshubin/github/sean/schulze/server/target/schulze.jar"
+    const val SecurityGroup = "ssh-8080"
+    const val SchulzeJar = "$UserHomeDirName/github/sean/schulze/server/target/schulze.jar"
 }

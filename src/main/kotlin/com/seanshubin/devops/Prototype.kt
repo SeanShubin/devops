@@ -12,12 +12,13 @@ fun datomicServer() {
     ec2.listInstancesNotTerminated()
     val createShellFromHost = DatomicServerDependencyInjection.createShellFromHost
     val instanceId = ec2.createInstance(GlobalConstants.AmazonLinux2AMI, GlobalConstants.KeyName)
-    log.emit("instanceId = $instanceId")
+    val emit = DatomicServerDependencyInjection.emit
+    emit("instanceId = $instanceId")
     val stabilizer = DatomicServerDependencyInjection.stabilizer
     ec2.waitUntilReady(instanceId)
     val host = ec2.getHost(instanceId)
-    log.emit("host = $host")
-    log.emit("ssh -i \"$privateKeyPathName\" $userName@$host")
+    emit("host = $host")
+    emit("ssh -i \"$privateKeyPathName\" $userName@$host")
     val createShell: () -> SshShell = {
         val shell = createShellFromHost(host)
         shell.execute("pwd")
@@ -32,8 +33,8 @@ fun datomicServer() {
     }
 
     ssh.execute("sudo yum -y install java")
-    ssh.execute("cd $datomicDir && bin/transactor config/samples/free-transactor-template.properties")
-    ssh.execute("java -jar schulze.jar 8080 datomic:free://localhost:4334/schulze")
+//    ssh.execute("cd $datomicDir && bin/transactor config/samples/free-transactor-template.properties &")
+//    ssh.execute("java -jar schulze.jar 8080 datomic:free://localhost:4334/schulze &")
 }
 
 fun main(args: Array<String>) {
