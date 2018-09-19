@@ -26,6 +26,6 @@ interface Logger {
                exitCode: Int)
 
     fun captureOutputStream(source:String, type: String, prefix: String): OutputStream
-    fun waitingOn(caption:String, attempt:Int, done:Any)
+    fun waitingOn(caption:String, attempt:Int, target:Any)
     fun update(caption:String, status:String, attempt:Int)
 }
