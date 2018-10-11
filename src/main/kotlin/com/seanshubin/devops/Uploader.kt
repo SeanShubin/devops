@@ -11,6 +11,7 @@ class Uploader(private val s3Api: S3Api,
 
     }
     private fun uploadFile(path:Path){
-        s3Api.uploadFile(htmlDirectory.relativize(path).toString(), path)
+        val name = htmlDirectory.relativize(path).toString()
+        s3Api.uploadFile(name, path)
     }
 }
